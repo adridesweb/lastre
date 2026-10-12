@@ -454,7 +454,10 @@ h2 {
 }
 
 .drive-card {
-  width: 260px;
+  width: 320px;
+  max-width: 100%;
+  /* Los botones no parten línea por defecto y el texto de uso se salía de la tarjeta. */
+  white-space: normal;
   display: flex;
   flex-direction: column;
   gap: 10px;

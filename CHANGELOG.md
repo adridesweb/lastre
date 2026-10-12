@@ -12,6 +12,7 @@ All notable changes to Lastre are documented here. The format follows
   of being recycled. Lastre now refuses to send anything that Windows would not
   keep in the Recycle Bin: items that do not fit, items that would push older
   items out of the bin, and items on drives without a Recycle Bin.
+- The used/free text overflowed the drive card on the start screen.
 
 ### Added
 
