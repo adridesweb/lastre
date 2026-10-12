@@ -848,3 +848,23 @@ h2 {
   align-self: center;
   font-variant-numeric: tabular-nums;
 }
+
+/* Avisos de la confirmación de envío a la Papelera */
+
+.caution {
+  padding: 10px 12px;
+  border: 1px solid var(--trash-ink, var(--trash));
+  border-radius: 10px;
+  background: var(--trash-soft);
+}
+
+.caution-tag {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border: 1px solid var(--trash-ink, var(--trash));
+  border-radius: 10px;
+  color: var(--trash-ink, var(--trash));
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

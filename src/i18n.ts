@@ -76,7 +76,20 @@ const es = {
   alreadyIncluded: (name: string, container: string) =>
     `«${name}» ya va incluido en «${container}», que está en la cesta.`,
   sentToBin: (items: string, size: string) => `Enviado a la Papelera: ${items} (${size}).`,
-  sendFailed: (n: number, details: string) => `No se pudo con ${n}: ${details}`,
+
+  errProtected: (name: string) =>
+    `«${name}» es parte de Windows o de tus programas y Lastre no lo envía a la Papelera.`,
+  errNoBin: (name: string) =>
+    `«${name}» está en una unidad sin Papelera de reciclaje (USB, red…). Se borraría para siempre, así que Lastre no lo toca.`,
+  errBinDisabled: (name: string) =>
+    `Windows está configurado para borrar sin pasar por la Papelera, así que «${name}» se borraría para siempre. Lastre no lo toca.`,
+  errTooBig: (name: string, capacity: string) =>
+    `«${name}» no cabe en la Papelera (capacidad: ${capacity}) y Windows lo borraría para siempre. Si estás seguro, bórralo desde el Explorador.`,
+  errBinFull: (name: string, free: string) =>
+    `En la Papelera solo quedan ${free} libres: para meter «${name}», Windows eliminaría lo más antiguo que hay en ella. Vacía la Papelera y vuelve a intentarlo.`,
+  cautionWarning:
+    "Algunos elementos están en carpetas de programas o de datos de aplicaciones. Enviarlos a la Papelera puede hacer que algún programa deje de funcionar.",
+  cautionTag: "programa",
 
   reveal: "Mostrar en el Explorador",
   copyPath: "Copiar ruta",
@@ -160,7 +173,20 @@ const en: Strings = {
   alreadyIncluded: (name, container) =>
     `"${name}" is already included in "${container}", which is in the basket.`,
   sentToBin: (items, size) => `Sent to the Recycle Bin: ${items} (${size}).`,
-  sendFailed: (n, details) => `${n} failed: ${details}`,
+
+  errProtected: (name) =>
+    `"${name}" is part of Windows or your programs, so Lastre won't send it to the Recycle Bin.`,
+  errNoBin: (name) =>
+    `"${name}" is on a drive without a Recycle Bin (USB, network…). It would be deleted for good, so Lastre won't touch it.`,
+  errBinDisabled: (name) =>
+    `Windows is set to delete without using the Recycle Bin, so "${name}" would be deleted for good. Lastre won't touch it.`,
+  errTooBig: (name, capacity) =>
+    `"${name}" doesn't fit in the Recycle Bin (capacity: ${capacity}) and Windows would delete it for good. If you're sure, delete it from File Explorer.`,
+  errBinFull: (name, free) =>
+    `The Recycle Bin only has ${free} free: to fit "${name}", Windows would purge the oldest items in it. Empty the Recycle Bin and try again.`,
+  cautionWarning:
+    "Some items are inside program or app-data folders. Sending them to the Recycle Bin may stop a program from working.",
+  cautionTag: "program",
 
   reveal: "Show in Explorer",
   copyPath: "Copy path",

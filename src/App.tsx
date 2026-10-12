@@ -24,6 +24,29 @@ interface Scan {
   denied: number;
 }
 
+/** Elemento de la cesta; `caution` marca los que pueden afectar a programas instalados. */
+type BasketItem = NodeInfo & { caution: boolean };
+
+/** Traduce el código con el que el backend se niega a enviar algo a la Papelera. */
+function describeTrashError(code: string, name: string, t: Strings): string {
+  const [kind, ...args] = code.split(":");
+  const bytes = (i: number) => Number(args[i]) || 0;
+  switch (kind) {
+    case "protected":
+      return t.errProtected(name);
+    case "no-bin":
+      return t.errNoBin(name);
+    case "bin-disabled":
+      return t.errBinDisabled(name);
+    case "too-big":
+      return t.errTooBig(name, formatSize(bytes(0)));
+    case "bin-full":
+      return t.errBinFull(name, formatSize(Math.max(0, bytes(0) - bytes(1))));
+    default:
+      return `${name}: ${code}`;
+  }
+}
+
 type Section = "summary" | "folders" | "types" | "bigFiles";
 
 const SECTIONS: { id: Section; label: (t: Strings) => string }[] = [
@@ -50,7 +73,7 @@ export default function App() {
   const [section, setSection] = useState<Section>("summary");
   const [folder, setFolder] = useState<NodeInfo | null>(null);
   const [typeFilter, setTypeFilter] = useState<FileType | null>(null);
-  const [basket, setBasket] = useState<NodeInfo[]>([]);
+  const [basket, setBasket] = useState<BasketItem[]>([]);
   const [version, setVersion] = useState(0);
   const [menu, setMenu] = useState<{ info: NodeInfo; x: number; y: number } | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -161,12 +184,19 @@ export default function App() {
     setSection("folders");
   };
 
-  const addToBasket = (info: NodeInfo) => {
-    const current = basketRef.current;
+  const addToBasket = async (info: NodeInfo) => {
     if (info.id === 0) {
       setNotice(t.cannotBasketRoot);
       return;
     }
+    if (basketRef.current.some((b) => b.id === info.id)) return;
+    // Lo que Windows borraría para siempre, o de lo que depende el sistema, no entra en la cesta.
+    const check = await api.trashCheck(info.id);
+    if (check.blocked) {
+      setNotice(describeTrashError(check.blocked, info.name, t));
+      return;
+    }
+    const current = basketRef.current;
     if (current.some((b) => b.id === info.id)) return;
     const container = current.find((b) => info.ancestors.includes(b.id));
     if (container) {
@@ -174,7 +204,7 @@ export default function App() {
       return;
     }
     // Lo que ya estaba dentro de esta carpeta queda cubierto por ella.
-    setBasket([...current.filter((b) => !b.ancestors.includes(info.id)), info]);
+    setBasket([...current.filter((b) => !b.ancestors.includes(info.id)), { ...info, caution: check.caution }]);
     setNotice(null);
   };
 
@@ -184,22 +214,22 @@ export default function App() {
       return;
     }
     const info = await api.nodeInfo(id);
-    if (info) addToBasket(info);
+    if (info) await addToBasket(info);
   };
 
   const emptyBasket = async () => {
     setConfirming(false);
     setEmptying(true);
-    const failed: NodeInfo[] = [];
+    const failed: BasketItem[] = [];
     const errors: string[] = [];
-    const sent: NodeInfo[] = [];
+    const sent: BasketItem[] = [];
     for (const item of basketRef.current) {
       try {
         await api.trash(item.id);
         sent.push(item);
       } catch (err) {
         failed.push(item);
-        errors.push(`${item.name}: ${String(err)}`);
+        errors.push(describeTrashError(String(err), item.name, t));
       }
     }
     setBasket(failed);
@@ -222,7 +252,7 @@ export default function App() {
       const freed = formatSize(sent.reduce((sum, s) => sum + s.size, 0));
       messages.push(t.sentToBin(t.items(sent.length, formatCount(sent.length)), freed));
     }
-    if (errors.length > 0) messages.push(t.sendFailed(errors.length, errors.join(" · ")));
+    if (errors.length > 0) messages.push(...errors);
     setNotice(messages.join(" "));
   };
 
@@ -398,7 +428,7 @@ export default function App() {
               e.preventDefault();
               setDropping(false);
               const id = Number(e.dataTransfer.getData("text/plain"));
-              if (Number.isInteger(id)) void api.nodeInfo(id).then((info) => info && addToBasket(info));
+              if (Number.isInteger(id)) void api.nodeInfo(id).then((info) => info && void addToBasket(info));
             }}
           >
             <div>
@@ -472,11 +502,15 @@ export default function App() {
               <ul className="dialog-list">
                 {basket.map((item) => (
                   <li key={item.id}>
-                    <span>{item.path}</span>
+                    <span>
+                      {item.path}
+                      {item.caution && <span className="caution-tag">{t.cautionTag}</span>}
+                    </span>
                     <span>{formatSize(item.size)}</span>
                   </li>
                 ))}
               </ul>
+              {basket.some((item) => item.caution) && <p className="caution">{t.cautionWarning}</p>}
               <p>{t.confirmBody(formatSize(basketSize))}</p>
               <div className="dialog-actions">
                 <button className="outline" autoFocus onClick={() => setConfirming(false)}>

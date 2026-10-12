@@ -20,7 +20,7 @@ The installers are not code-signed yet, so Windows SmartScreen may warn the firs
 - **Folders** — drill down folder by folder, always sorted by size, with a clickable path.
 - **File types** — space used per extension; jump from a type to its largest files.
 - **Large files** — the 200 largest files in the scan, optionally filtered by type.
-- **Cleanup basket** — add items with a button, by dragging rows, or from the right-click menu, then send them all to the Recycle Bin after a confirmation that lists every path. Nothing is ever deleted permanently.
+- **Cleanup basket** — add items with a button, by dragging rows, or from the right-click menu, then send them all to the Recycle Bin after a confirmation that lists every path. Lastre refuses anything Windows would delete permanently instead of recycling.
 - **Settings** — interface in Spanish or English and four color palettes.
 - **Fast scanning** — a parallel Rust scanner; a 670 GB system drive with 3.2 million files takes about a minute and a half.
 
@@ -81,6 +81,16 @@ To publish a new version:
 
 Pushing the tag runs the [release workflow](.github/workflows/release.yml), which builds the installers and attaches them to a draft GitHub release to review and publish.
 
+## Safety
+
+Windows silently deletes for good anything that does not fit in the Recycle Bin or lives on a drive without one. Lastre checks before touching anything and refuses to send an item when:
+
+- it is larger than the Recycle Bin's capacity, or adding it would make Windows purge older items from the bin;
+- it is on a drive with no Recycle Bin (USB sticks, network drives) or the bin is disabled in Windows;
+- it is part of the system: the Windows folder, `Program Files`, `ProgramData`, user profile folders, drive roots, and system files such as `pagefile.sys`.
+
+Items inside program or app-data folders are allowed, with a warning in the confirmation dialog.
+
 ## How it measures
 
 - Folders that can't be read without administrator rights are skipped and counted; the summary shows how many. Run Lastre as administrator to include them.
@@ -99,6 +109,7 @@ src-tauri/src/        Rust backend
   scanner.rs          Parallel directory scanner
   tree.rs             Arena tree, size aggregation, largest files
   filetypes.rs        Per-extension statistics
+  safety.rs           Checks before sending anything to the Recycle Bin
   treemap.rs          Treemap layout and renderer (not used by the current interface)
   commands.rs         Tauri commands
 ```

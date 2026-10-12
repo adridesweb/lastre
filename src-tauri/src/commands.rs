@@ -10,6 +10,7 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 
 use crate::filetypes;
+use crate::safety::{self, Protected, Risk};
 use crate::scanner::{self, Progress};
 use crate::tree::Tree;
 use crate::treemap::{self, Layout};
@@ -370,14 +371,57 @@ pub fn reveal(state: State<AppState>, id: u32) -> Result<(), String> {
     tauri_plugin_opener::reveal_item_in_dir(path).map_err(|e| e.to_string())
 }
 
-/// Envía el elemento a la Papelera de reciclaje (nunca borra de forma permanente).
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrashCheck {
+    /// Código del motivo por el que no se puede enviar a la Papelera, si lo hay.
+    blocked: Option<String>,
+    /// Se puede enviar, pero puede romper programas instalados.
+    caution: bool,
+}
+
+/// Motivo (como código para la interfaz) por el que un elemento no debe ir a la Papelera.
+fn trash_blocker(path: &std::path::Path, size: u64, risk: Option<Risk>) -> Option<String> {
+    if risk == Some(Risk::Blocked) || safety::is_root_system_item(path) {
+        return Some("protected".into());
+    }
+    safety::check_bin(path, size).err().map(|issue| issue.code())
+}
+
+fn trash_target(state: &AppState, id: u32) -> Result<(PathBuf, u64), String> {
+    let inner = state.data();
+    let tree = inner.tree.as_ref().ok_or(NO_SCAN)?;
+    let node = tree.get(id).ok_or(NO_NODE)?;
+    Ok((tree.path(id), node.size))
+}
+
+/// Comprueba, sin tocar nada, si un elemento se puede enviar a la Papelera.
+#[tauri::command]
+pub fn trash_check(state: State<AppState>, id: u32) -> Result<TrashCheck, String> {
+    let (path, size) = trash_target(&state, id)?;
+    if id == 0 {
+        return Ok(TrashCheck { blocked: Some("protected".into()), caution: false });
+    }
+    let risk = safety::classify(&path, &Protected::from_env());
+    Ok(TrashCheck {
+        blocked: trash_blocker(&path, size, risk),
+        caution: risk == Some(Risk::Caution),
+    })
+}
+
+/// Envía el elemento a la Papelera de reciclaje. Se niega si no hay garantía
+/// de que acabe allí: Windows lo borraría de forma permanente sin avisar.
 #[tauri::command(async)]
 pub fn trash(state: State<AppState>, id: u32) -> Result<(), String> {
+    let (path, size) = trash_target(&state, id)?;
     if id == 0 {
-        return Err("No se puede enviar a la Papelera la raíz del escaneo".into());
+        return Err("protected".into());
     }
-    let path = path_of(&state, id)?;
-    ::trash::delete(&path).map_err(|e| format!("No se pudo enviar a la Papelera: {e}"))?;
+    let risk = safety::classify(&path, &Protected::from_env());
+    if let Some(code) = trash_blocker(&path, size, risk) {
+        return Err(code);
+    }
+    ::trash::delete(&path).map_err(|e| e.to_string())?;
     let mut inner = state.data();
     if let Some(tree) = inner.tree.as_mut() {
         if tree.get(id).is_some() {

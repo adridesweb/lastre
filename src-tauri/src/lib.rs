@@ -1,5 +1,6 @@
 mod commands;
 mod filetypes;
+mod safety;
 mod scanner;
 mod tree;
 mod treemap;
@@ -23,6 +24,7 @@ pub fn run() {
             commands::node_info,
             commands::reveal,
             commands::trash,
+            commands::trash_check,
             commands::largest_files,
             commands::open_recycle_bin,
         ])

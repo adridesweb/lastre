@@ -33,6 +33,13 @@ export interface NodeInfo {
   ancestors: number[];
 }
 
+export interface TrashCheck {
+  /** Código del motivo por el que no se puede enviar a la Papelera, si lo hay. */
+  blocked: string | null;
+  /** Se puede enviar, pero puede romper programas instalados. */
+  caution: boolean;
+}
+
 export interface FileType {
   ext: number;
   name: string;
@@ -68,5 +75,6 @@ export const api = {
   nodeInfo: (id: number) => invoke<NodeInfo | null>("node_info", { id }),
   reveal: (id: number) => invoke<void>("reveal", { id }),
   trash: (id: number) => invoke<void>("trash", { id }),
+  trashCheck: (id: number) => invoke<TrashCheck>("trash_check", { id }),
   openRecycleBin: () => invoke<void>("open_recycle_bin"),
 };
