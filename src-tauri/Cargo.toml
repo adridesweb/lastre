@@ -2,7 +2,8 @@
 name = "lastre"
 version = "0.1.0"
 description = "Analizador de uso de disco para Windows"
-authors = ["adrid"]
+authors = ["adridesweb"]
+license = "MIT"
 edition = "2024"
 
 [lib]

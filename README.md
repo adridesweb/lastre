@@ -106,3 +106,7 @@ src-tauri/src/        Rust backend
 ## Credits
 
 The color palettes are based on palettes from [Coolors](https://coolors.co/palettes/trending), including Deep Sea, Earthy Forest Hues and Vibrant Sunset; White & Greens is built on a Coolors green palette.
+
+## License
+
+[MIT](LICENSE)
