@@ -97,6 +97,7 @@ Items inside program or app-data folders are allowed, with a warning in the conf
 
 - Folders that can't be read without administrator rights are skipped and counted; the summary shows how many. Run Lastre as administrator to include them.
 - Junctions and symbolic links are not followed, so nothing is counted twice through a link.
+- Sizes are space taken on disk: sparse and compressed files count what they really occupy, not their logical size.
 - Cloud-only files (OneDrive placeholders) count as 0 bytes because they take no disk space.
 - Hard links (for example in `WinSxS`) are counted once per name, the same way File Explorer does.
 

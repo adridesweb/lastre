@@ -4,6 +4,14 @@ All notable changes to Lastre are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-10-12
+
+### Fixed
+
+- Sparse and compressed files (virtual disks, for example) were counted at their
+  logical size, so a scan could add up to more than the whole drive. Lastre now
+  counts the space they actually take on disk.
+
 ## [0.1.1] - 2026-10-12
 
 ### Fixed
@@ -33,5 +41,6 @@ All notable changes to Lastre are documented here. The format follows
 - Cleanup basket that sends everything to the Recycle Bin after confirmation.
 - Settings with Spanish and English and four color palettes.
 
+[0.1.2]: https://github.com/adridesweb/lastre/releases/tag/v0.1.2
 [0.1.1]: https://github.com/adridesweb/lastre/releases/tag/v0.1.1
 [0.1.0]: https://github.com/adridesweb/lastre/releases/tag/v0.1.0

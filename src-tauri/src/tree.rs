@@ -11,6 +11,9 @@ pub struct TempNode {
     pub size: u64,
     pub files: u32,
     pub is_dir: bool,
+    /// Ocupa en disco menos que su tamaño lógico (disperso, comprimido o solo en la nube),
+    /// o contiene algo que lo hace.
+    pub shrunk: bool,
     pub children: Vec<TempNode>,
 }
 
@@ -26,6 +29,8 @@ pub struct Node {
     pub ext: u16,
     pub is_dir: bool,
     pub deleted: bool,
+    /// Ver `TempNode::shrunk`.
+    pub shrunk: bool,
 }
 
 pub struct Tree {
@@ -64,6 +69,7 @@ impl Tree {
             ext: 0,
             is_dir: true,
             deleted: false,
+            shrunk: children.iter().any(|c| c.shrunk),
         });
 
         let mut stack = vec![(0u32, children)];
@@ -100,6 +106,7 @@ impl Tree {
                     ext,
                     is_dir: c.is_dir,
                     deleted: false,
+                    shrunk: c.shrunk,
                 });
                 if !c.children.is_empty() {
                     stack.push((start + i as u32, c.children));
@@ -193,7 +200,7 @@ pub(crate) mod tests {
     use super::*;
 
     pub fn file(name: &str, size: u64) -> TempNode {
-        TempNode { name: name.into(), size, files: 1, is_dir: false, children: vec![] }
+        TempNode { name: name.into(), size, files: 1, is_dir: false, shrunk: false, children: vec![] }
     }
 
     pub fn dir(name: &str, children: Vec<TempNode>) -> TempNode {
@@ -202,6 +209,7 @@ pub(crate) mod tests {
             size: children.iter().map(|c| c.size).sum(),
             files: children.iter().map(|c| c.files).sum(),
             is_dir: true,
+            shrunk: false,
             children,
         }
     }

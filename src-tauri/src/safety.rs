@@ -99,6 +99,27 @@ pub fn is_root_system_item(path: &Path) -> bool {
             .is_ok_and(|m| m.file_attributes() & FILE_ATTRIBUTE_SYSTEM != 0)
 }
 
+/// Tamaño lógico de un archivo o carpeta leído del disco. Es el que Windows compara
+/// con la capacidad de la Papelera, aunque en disco ocupe menos.
+pub fn logical_size(path: &Path) -> u64 {
+    let mut total = 0u64;
+    let mut pending = vec![path.to_path_buf()];
+    while let Some(current) = pending.pop() {
+        let Ok(meta) = std::fs::symlink_metadata(&current) else { continue };
+        if meta.file_type().is_symlink() {
+            continue;
+        }
+        if meta.is_dir() {
+            if let Ok(entries) = std::fs::read_dir(&current) {
+                pending.extend(entries.flatten().map(|e| e.path()));
+            }
+        } else {
+            total = total.saturating_add(meta.len());
+        }
+    }
+    total
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum BinIssue {
     /// La unidad no tiene Papelera (USB, red…) o no se ha podido comprobar.
@@ -336,6 +357,16 @@ mod tests {
         let state = bin_state(tmp.path());
         assert!(state.as_ref().is_ok_and(|s| s.capacity > 0), "sin Papelera en {:?}", tmp.path());
         assert_eq!(check_bin(tmp.path(), u64::MAX).map_err(|e| e.code().starts_with("too-big:")), Err(true));
+    }
+
+    #[test]
+    fn logical_size_sums_files_recursively() {
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::create_dir(tmp.path().join("sub")).unwrap();
+        std::fs::write(tmp.path().join("a.bin"), vec![0u8; 300]).unwrap();
+        std::fs::write(tmp.path().join("sub").join("b.bin"), vec![0u8; 700]).unwrap();
+        assert_eq!(logical_size(tmp.path()), 1000);
+        assert_eq!(logical_size(&tmp.path().join("a.bin")), 300);
     }
 
     #[test]

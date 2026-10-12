@@ -392,7 +392,10 @@ fn trash_target(state: &AppState, id: u32) -> Result<(PathBuf, u64), String> {
     let inner = state.data();
     let tree = inner.tree.as_ref().ok_or(NO_SCAN)?;
     let node = tree.get(id).ok_or(NO_NODE)?;
-    Ok((tree.path(id), node.size))
+    let (path, size, shrunk) = (tree.path(id), node.size, node.shrunk);
+    drop(inner);
+    // El árbol guarda lo que ocupa en disco; para la Papelera cuenta el tamaño lógico.
+    Ok((path.clone(), if shrunk { safety::logical_size(&path) } else { size }))
 }
 
 /// Comprueba, sin tocar nada, si un elemento se puede enviar a la Papelera.
