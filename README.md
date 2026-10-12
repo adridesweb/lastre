@@ -34,16 +34,6 @@ The installers are not code-signed yet, so Windows SmartScreen may warn the firs
 | --- | --- |
 | ![File types view](docs/screenshots/file-types.png) | ![Settings dialog with language and palettes](docs/screenshots/settings.png) |
 
-### Palettes
-
-| Deep Sea | White & Greens |
-| --- | --- |
-| ![Deep Sea palette](docs/screenshots/palette-deep-sea.png) | ![White & Greens palette](docs/screenshots/palette-white-greens.png) |
-
-| Earthy Forest Hues | Vibrant Sunset |
-| --- | --- |
-| ![Earthy Forest Hues palette](docs/screenshots/palette-earthy-forest-hues.png) | ![Vibrant Sunset palette](docs/screenshots/palette-vibrant-sunset.png) |
-
 The screenshots use a demo folder, not a real drive.
 
 ## Building from source
@@ -115,4 +105,4 @@ src-tauri/src/        Rust backend
 
 ## Credits
 
-The color palettes are based on palettes from [Coolors](https://coolors.co/palettes/trending), including Deep Sea, Earthy Forest Hues and Vibrant Sunset.
+The color palettes are based on palettes from [Coolors](https://coolors.co/palettes/trending), including Deep Sea, Earthy Forest Hues and Vibrant Sunset; White & Greens is built on a Coolors green palette.

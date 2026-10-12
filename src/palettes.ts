@@ -19,30 +19,6 @@ export interface Palette {
 
 export const PALETTES: Palette[] = [
   {
-    id: "deep-sea",
-    name: "Deep Sea",
-    dark: false,
-    swatches: ["#0d1b2a", "#1b263b", "#415a77", "#778da9", "#e0e1dd"],
-    vars: {
-      "--bg": "#e0e1dd",
-      "--side": "#d1d5d4",
-      "--ink": "#0d1b2a",
-      "--on-ink": "#e0e1dd",
-      "--muted": "#415a77",
-      "--line": "#cbcfce",
-      "--line-strong": "#a9b4c2",
-      "--accent": "#415a77",
-      "--accent-soft": "#d0d7df",
-      "--trash": "#1b263b",
-      "--on-trash": "#e0e1dd",
-      "--trash-soft": "#c9d1db",
-      "--hover": "#d7d9d6",
-      "--side-hover": "#c2c8c9",
-      "--track": "#b4bcc6",
-    },
-    ranks: ["#0d1b2a", "#415a77", "#778da9", "#1b263b", "#a3b3c6", "#5c748f", "#c0cad6", "#cdd1d2"],
-  },
-  {
     // Blanco con toques verdes; el blanco y los neutros se añaden a los verdes de la paleta.
     id: "white-greens",
     name: "White & Greens",
@@ -68,6 +44,30 @@ export const PALETTES: Palette[] = [
       "--track": "#d5dcd4",
     },
     ranks: ["#004b23", "#38b000", "#008000", "#9ef01a", "#006400", "#70e000", "#ccff33", "#e6eae5"],
+  },
+  {
+    id: "deep-sea",
+    name: "Deep Sea",
+    dark: false,
+    swatches: ["#0d1b2a", "#1b263b", "#415a77", "#778da9", "#e0e1dd"],
+    vars: {
+      "--bg": "#e0e1dd",
+      "--side": "#d1d5d4",
+      "--ink": "#0d1b2a",
+      "--on-ink": "#e0e1dd",
+      "--muted": "#415a77",
+      "--line": "#cbcfce",
+      "--line-strong": "#a9b4c2",
+      "--accent": "#415a77",
+      "--accent-soft": "#d0d7df",
+      "--trash": "#1b263b",
+      "--on-trash": "#e0e1dd",
+      "--trash-soft": "#c9d1db",
+      "--hover": "#d7d9d6",
+      "--side-hover": "#c2c8c9",
+      "--track": "#b4bcc6",
+    },
+    ranks: ["#0d1b2a", "#415a77", "#778da9", "#1b263b", "#a3b3c6", "#5c748f", "#c0cad6", "#cdd1d2"],
   },
   {
     id: "earthy-forest-hues",
@@ -133,7 +133,7 @@ export const PALETTES: Palette[] = [
   },
 ];
 
-export const DEFAULT_PALETTE: PaletteId = "deep-sea";
+export const DEFAULT_PALETTE: PaletteId = "white-greens";
 
 export function applyPalette(id: PaletteId) {
   const palette = PALETTES.find((p) => p.id === id) ?? PALETTES[0];

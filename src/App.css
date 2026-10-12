@@ -1,22 +1,23 @@
 @import "@fontsource-variable/inter";
 
 :root {
-  /* Paleta por defecto (Deep Sea); src/palettes.ts la sustituye al arrancar. */
-  --bg: #e0e1dd;
-  --side: #d1d5d4;
-  --ink: #0d1b2a;
-  --on-ink: #e0e1dd;
-  --muted: #415a77;
-  --line: #cbcfce;
-  --line-strong: #a9b4c2;
-  --accent: #415a77;
-  --accent-soft: #d0d7df;
-  --trash: #1b263b;
-  --on-trash: #e0e1dd;
-  --trash-soft: #c9d1db;
-  --hover: #d7d9d6;
-  --side-hover: #c2c8c9;
-  --track: #b4bcc6;
+  /* Paleta por defecto (White & Greens); src/palettes.ts la sustituye al arrancar. */
+  --bg: #ffffff;
+  --side: #f4f6f3;
+  --ink: #0f1a14;
+  --on-ink: #ffffff;
+  --muted: #4f5b54;
+  --line: #e6eae5;
+  --line-strong: #c5cdc6;
+  --accent: #007200;
+  --accent-soft: #ecfbd9;
+  --trash: #38b000;
+  --on-trash: #001a0c;
+  --trash-ink: #006400;
+  --trash-soft: #f0fbdc;
+  --hover: #f7f9f6;
+  --side-hover: #e6ebe4;
+  --track: #d5dcd4;
   --display: "Inter Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-family: "Inter Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 15px;
