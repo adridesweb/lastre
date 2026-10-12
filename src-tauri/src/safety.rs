@@ -9,6 +9,7 @@ use std::path::{Component, Path, PathBuf};
 
 use windows_sys::Win32::Storage::FileSystem::{
     GetDiskFreeSpaceExW, GetDriveTypeW, GetVolumeNameForVolumeMountPointW, GetVolumePathNameW,
+    QueryDosDeviceW,
 };
 use windows_sys::Win32::UI::Shell::{SHQUERYRBINFO, SHQueryRecycleBinW};
 use winreg::RegKey;
@@ -143,7 +144,22 @@ struct BinState {
     used: u64,
 }
 
+/// Carpeta a la que apunta una unidad `subst` ("L:\" -> "C:\datos\demo"), si lo es.
+fn subst_target(root: &[u16]) -> Option<PathBuf> {
+    let device = [*root.first()?, *root.get(1)?, 0];
+    let mut target = [0u16; 520];
+    let len = unsafe { QueryDosDeviceW(device.as_ptr(), target.as_mut_ptr(), target.len() as u32) };
+    if len == 0 {
+        return None;
+    }
+    from_wide(&target).strip_prefix(r"\??\").map(PathBuf::from)
+}
+
 fn bin_state(path: &Path) -> Result<BinState, BinIssue> {
+    bin_state_of(path, true)
+}
+
+fn bin_state_of(path: &Path, follow_subst: bool) -> Result<BinState, BinIssue> {
     let path_w = wide(&path.to_string_lossy());
     let mut root = [0u16; 261];
     if unsafe { GetVolumePathNameW(path_w.as_ptr(), root.as_mut_ptr(), root.len() as u32) } == 0 {
@@ -157,7 +173,11 @@ fn bin_state(path: &Path) -> Result<BinState, BinIssue> {
         GetVolumeNameForVolumeMountPointW(root.as_ptr(), volume.as_mut_ptr(), volume.len() as u32)
     };
     if named == 0 {
-        return Err(BinIssue::NoBin);
+        // Una unidad creada con `subst` no es un volumen: se comprueba la carpeta real.
+        return match subst_target(&root) {
+            Some(target) if follow_subst => bin_state_of(&target, false),
+            _ => Err(BinIssue::NoBin),
+        };
     }
     // "\\?\Volume{guid}\" -> "{guid}"
     let volume = from_wide(&volume);

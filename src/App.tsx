@@ -276,7 +276,10 @@ export default function App() {
       <div className="app" lang={settings.lang} onContextMenu={(e) => e.preventDefault()}>
         <nav className="sidebar" aria-label={t.navAria}>
           <div className="brand-row">
-            <div className="brand">Lastre</div>
+            <div className="brand">
+              <img src="/logo.svg" alt="" width="30" height="30" />
+              Lastre
+            </div>
             <button className="icon" aria-label={t.settings} title={t.settings} onClick={() => setSettingsOpen(true)}>
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />

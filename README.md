@@ -1,3 +1,5 @@
+<p align="center"><img src="public/logo.svg" alt="Lastre logo" width="96" height="96"></p>
+
 # Lastre
 
 A disk usage analyzer for Windows built around one question: *what can I get rid of?*

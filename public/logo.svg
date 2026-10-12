@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Lastre">
+  <!-- Logo de Lastre: la L y un anillo que se suelta de ella. -->
+  <rect width="512" height="512" rx="112" fill="#004b23"/>
+  <path d="M306.6 386.6A140 140 0 1 0 133.4 213.4" fill="none" stroke="#ccff33" stroke-width="64"/>
+  <path d="M128 252V392H268" fill="none" stroke="#ffffff" stroke-width="64" stroke-linejoin="miter"/>
+</svg>

@@ -20,6 +20,10 @@ All notable changes to Lastre are documented here. The format follows
   drive roots, `pagefile.sys` and similar) can no longer be added to the basket.
 - A warning in the confirmation dialog for items inside program or app-data folders.
 
+### Changed
+
+- New logo and app icon.
+
 ## [0.1.0] - 2026-10-12
 
 ### Added
