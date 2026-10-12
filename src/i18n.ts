@@ -44,6 +44,7 @@ const es = {
   seeAll: (n: string) => `Ver los ${n} elementos`,
   shareAria: "Reparto del espacio entre los elementos que más ocupan",
   rest: "Resto",
+  shareHint: "Pasa el ratón por la barra para ver qué es cada tramo.",
 
   open: "Abrir",
   toBasket: "A la cesta",
@@ -141,6 +142,7 @@ const en: Strings = {
   seeAll: (n) => `See all ${n} items`,
   shareAria: "How space is split among the largest items",
   rest: "Rest",
+  shareHint: "Hover the bar to see what each segment is.",
 
   open: "Open",
   toBasket: "Add to basket",

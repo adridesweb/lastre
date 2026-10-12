@@ -319,8 +319,47 @@ h2 {
   min-width: 0;
 }
 
-.section-head + .sharebar {
-  margin-bottom: 12px;
+.section-head + .share {
+  margin-bottom: 8px;
+}
+
+.share {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sharebar span {
+  transition: opacity 0.12s;
+}
+
+.sharebar.has-active span:not(.active) {
+  opacity: 0.3;
+}
+
+.share-caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.share-caption strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.share-caption .swatch {
+  flex: none;
+}
+
+.row.highlighted,
+.row.highlighted:hover {
+  background: var(--accent-soft);
 }
 
 .rows {

@@ -6,6 +6,11 @@ All notable changes to Lastre are documented here. The format follows
 
 ## [0.1.2] - 2026-10-12
 
+### Added
+
+- Hovering a segment of the share bar shows what it is below the bar and highlights
+  its row in the list; hovering a row highlights its segment.
+
 ### Fixed
 
 - Sparse and compressed files (virtual disks, for example) were counted at their

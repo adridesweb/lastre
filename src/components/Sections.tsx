@@ -3,7 +3,7 @@ import { api, type Children, type FileType, type NodeDto, type NodeInfo } from "
 import { formatCount, formatPercent, formatSize } from "../format";
 import { useT } from "../i18n";
 import { rankColor } from "../palettes";
-import { ItemRow, ShareBar, type ItemActions } from "./ItemRow";
+import { ItemRow, ShareBar, shareSegment, type ItemActions } from "./ItemRow";
 
 const PAGE = 200;
 
@@ -24,7 +24,15 @@ function useLoaded<T>(load: () => Promise<T>, deps: unknown[]): T | null {
   return value;
 }
 
-function ChildList(props: { items: NodeDto[]; total: number; actions: ItemActions }) {
+interface ChildListProps {
+  items: NodeDto[];
+  total: number;
+  actions: ItemActions;
+  active: number | null;
+  onActive: (segment: number | null) => void;
+}
+
+function ChildList(props: ChildListProps) {
   return (
     <ul className="rows">
       {props.items.map((item, i) => (
@@ -37,6 +45,8 @@ function ChildList(props: { items: NodeDto[]; total: number; actions: ItemAction
           color={rankColor(i)}
           canOpen={item.isDir && item.hasChildren}
           actions={props.actions}
+          highlighted={props.active === shareSegment(i)}
+          onHover={(inside) => props.onActive(inside ? shareSegment(i) : null)}
         />
       ))}
     </ul>
@@ -55,6 +65,7 @@ interface SummaryProps {
 export function Summary({ root, denied, version, actions, onRescan, onSeeAll }: SummaryProps) {
   const t = useT();
   const children = useLoaded<Children>(() => api.getChildren(0), [version]);
+  const [active, setActive] = useState<number | null>(null);
   const items = children?.items ?? [];
   return (
     <>
@@ -68,7 +79,12 @@ export function Summary({ root, denied, version, actions, onRescan, onSeeAll }: 
             {t.measureAgain}
           </button>
         </div>
-        <ShareBar parts={items.map((i) => ({ label: i.name, size: i.size }))} total={root.size} />
+        <ShareBar
+          parts={items.map((i) => ({ label: i.name, size: i.size }))}
+          total={root.size}
+          active={active}
+          onActive={setActive}
+        />
         <div className="muted">
           {t.files(formatCount(root.files))}
           {denied > 0 && <span title={t.deniedTip}> · {t.denied(formatCount(denied))}</span>}
@@ -83,7 +99,13 @@ export function Summary({ root, denied, version, actions, onRescan, onSeeAll }: 
             </button>
           )}
         </div>
-        <ChildList items={items.slice(0, 8)} total={root.size} actions={actions} />
+        <ChildList
+          items={items.slice(0, 8)}
+          total={root.size}
+          actions={actions}
+          active={active}
+          onActive={setActive}
+        />
       </section>
     </>
   );
@@ -100,7 +122,11 @@ export function Folders({ folder, rootPath, version, actions }: FoldersProps) {
   const t = useT();
   const children = useLoaded<Children>(() => api.getChildren(folder.id), [folder.id, version]);
   const [shown, setShown] = useState(PAGE);
-  useEffect(() => setShown(PAGE), [folder.id]);
+  const [active, setActive] = useState<number | null>(null);
+  useEffect(() => {
+    setShown(PAGE);
+    setActive(null);
+  }, [folder.id]);
 
   const items = children?.items ?? [];
   const crumbs = [rootPath, ...folder.path.slice(rootPath.length).split("\\").filter(Boolean)].map(
@@ -128,8 +154,19 @@ export function Folders({ folder, rootPath, version, actions }: FoldersProps) {
         <h2>{formatSize(folder.size)}</h2>
         <span className="muted">{t.files(formatCount(folder.files))}</span>
       </div>
-      <ShareBar parts={items.map((i) => ({ label: i.name, size: i.size }))} total={folder.size} />
-      <ChildList items={items.slice(0, shown)} total={folder.size} actions={actions} />
+      <ShareBar
+        parts={items.map((i) => ({ label: i.name, size: i.size }))}
+        total={folder.size}
+        active={active}
+        onActive={setActive}
+      />
+      <ChildList
+        items={items.slice(0, shown)}
+        total={folder.size}
+        actions={actions}
+        active={active}
+        onActive={setActive}
+      />
       {children && items.length === 0 && <p className="muted pad">{t.emptyFolder}</p>}
       {pending > 0 && (
         <div className="more">
@@ -154,6 +191,7 @@ interface TypesProps {
 export function Types({ total, version, onPick }: TypesProps) {
   const t = useT();
   const types = useLoaded<FileType[]>(() => api.getFileTypes(0), [version]) ?? [];
+  const [active, setActive] = useState<number | null>(null);
   const label = (type: FileType) => (type.name ? `.${type.name}` : t.noExtension);
   return (
     <section>
@@ -161,10 +199,20 @@ export function Types({ total, version, onPick }: TypesProps) {
         <h2>{t.navTypes}</h2>
         <span className="muted">{t.bySpace}</span>
       </div>
-      <ShareBar parts={types.map((type) => ({ label: label(type), size: type.size }))} total={total} />
+      <ShareBar
+        parts={types.map((type) => ({ label: label(type), size: type.size }))}
+        total={total}
+        active={active}
+        onActive={setActive}
+      />
       <ul className="rows">
         {types.map((type, i) => (
-          <li key={type.ext} className="row">
+          <li
+            key={type.ext}
+            className={`row${active === shareSegment(i) ? " highlighted" : ""}`}
+            onMouseEnter={() => setActive(shareSegment(i))}
+            onMouseLeave={() => setActive(null)}
+          >
             <span className="swatch" style={{ background: rankColor(i) }} aria-hidden="true" />
             <span className="row-name">
               <span className="row-title">{label(type)}</span>

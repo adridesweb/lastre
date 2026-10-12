@@ -10,6 +10,14 @@ export interface ItemActions {
   openMenu: (id: number, x: number, y: number) => void;
 }
 
+/** Tramos con color propio en la barra de reparto; el resto se agrupa en uno más. */
+export const SHARE_PARTS = 7;
+
+/** Tramo de la barra de reparto que corresponde a la fila `index` de una lista. */
+export function shareSegment(index: number): number {
+  return Math.min(index, SHARE_PARTS);
+}
+
 interface Props {
   id: number;
   name: string;
@@ -20,14 +28,18 @@ interface Props {
   color: string;
   canOpen: boolean;
   actions: ItemActions;
+  /** Resaltada porque el ratón está sobre su tramo de la barra de reparto. */
+  highlighted?: boolean;
+  onHover?: (inside: boolean) => void;
 }
 
-export function ItemRow({ id, name, detail, size, total, color, canOpen, actions }: Props) {
+export function ItemRow(props: Props) {
+  const { id, name, detail, size, total, color, canOpen, actions, highlighted, onHover } = props;
   const t = useT();
   const inBasket = actions.basketIds.has(id);
   return (
     <li
-      className={`row${inBasket ? " in-basket" : ""}`}
+      className={`row${inBasket ? " in-basket" : ""}${highlighted ? " highlighted" : ""}`}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", String(id));
@@ -38,6 +50,8 @@ export function ItemRow({ id, name, detail, size, total, color, canOpen, actions
         e.preventDefault();
         actions.openMenu(id, e.clientX, e.clientY);
       }}
+      onMouseEnter={onHover && (() => onHover(true))}
+      onMouseLeave={onHover && (() => onHover(false))}
     >
       <span className="swatch" style={{ background: color }} aria-hidden="true" />
       <span className="row-name">
@@ -73,30 +87,49 @@ export function ItemRow({ id, name, detail, size, total, color, canOpen, actions
 interface ShareBarProps {
   parts: { label: string; size: number }[];
   total: number;
+  /** Tramo resaltado (compartido con la lista de debajo), o `null`. */
+  active: number | null;
+  onActive: (segment: number | null) => void;
 }
 
-const SHARE_PARTS = 7;
-
-/** Barra apilada con el reparto de los elementos que más ocupan. */
-export function ShareBar({ parts, total }: ShareBarProps) {
+/** Barra apilada con el reparto de los elementos que más ocupan y, debajo, qué es el tramo señalado. */
+export function ShareBar({ parts, total, active, onActive }: ShareBarProps) {
   const t = useT();
-  const shown = parts.slice(0, SHARE_PARTS);
-  const rest = total - shown.reduce((sum, p) => sum + p.size, 0);
+  const segments = parts.slice(0, SHARE_PARTS).map((p) => ({ label: p.label, size: p.size }));
+  const rest = total - segments.reduce((sum, p) => sum + p.size, 0);
+  if (rest > 0) segments.push({ label: t.rest, size: rest });
+  const current = active !== null ? segments[active] : undefined;
+
   return (
-    <div className="sharebar" role="img" aria-label={t.shareAria}>
-      {shown.map((p, i) => (
-        <span
-          key={i}
-          title={`${p.label} · ${formatSize(p.size)}`}
-          style={{ flexGrow: p.size, background: rankColor(i) }}
-        />
-      ))}
-      {rest > 0 && (
-        <span
-          title={`${t.rest} · ${formatSize(rest)}`}
-          style={{ flexGrow: rest, background: rankColor(SHARE_PARTS) }}
-        />
-      )}
+    <div className="share">
+      <div
+        className={`sharebar${current ? " has-active" : ""}`}
+        role="img"
+        aria-label={t.shareAria}
+        onMouseLeave={() => onActive(null)}
+      >
+        {segments.map((p, i) => (
+          <span
+            key={i}
+            className={i === active ? "active" : undefined}
+            style={{ flexGrow: p.size, background: rankColor(i) }}
+            onMouseEnter={() => onActive(i)}
+          />
+        ))}
+      </div>
+      <div className="share-caption" aria-live="polite">
+        {current ? (
+          <>
+            <span className="swatch" style={{ background: rankColor(active!) }} aria-hidden="true" />
+            <strong>{current.label}</strong>
+            <span>
+              {formatSize(current.size)} · {formatPercent(current.size, total)}
+            </span>
+          </>
+        ) : (
+          <span className="muted">{segments.length > 0 ? t.shareHint : ""}</span>
+        )}
+      </div>
     </div>
   );
 }
